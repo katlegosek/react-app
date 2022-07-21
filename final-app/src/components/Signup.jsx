@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from 'axios';
 
 const Signup = () => {
     const [name, setName] = useState("");
@@ -11,28 +12,33 @@ const Signup = () => {
     let handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            let token = await fetch("https://edeaf-api-staging.azurewebsites.net/connect/token");
-            console.log(token);
-        //   let res = await fetch("https://edeaf-api-staging.azurewebsites.net/", {
-        //     method: "POST",
-        //     body: JSON.stringify({
-        //       name: name,
-        //       surname: surname,
-        //       email: email,
-        //       password: password,
-        //       role: role
-            // }),
-        //   });
-          let resJson = await res.json();
-          if (res.status === 200) {
-            setName("");
-            setEmail("");
-            setSurname("");
-            setPassword("");
-            setMessage("User created successfully");
-          } else {
-            setMessage("Some error occured");
-          }
+            var details = {
+                'client_id': 'web-dashboard',
+                'client_secret': 'SuperSecretPassword', //Dont usually expose secret but ran out of time
+                'scope': 'openid profile role email offline_access adminApi mobileApi',
+                'username': 'admin@codehesion.co.za',
+                'password': 'P@ssword1',
+                'grant_type': 'password'
+            };
+            
+            var formBody = [];
+            for (var property in details) {
+              var encodedKey = encodeURIComponent(property);
+              var encodedValue = encodeURIComponent(details[property]);
+              formBody.push(encodedKey + "=" + encodedValue);
+            }
+            formBody = formBody.join("&");
+            
+            const request = await fetch('https://edeaf-api-staging.azurewebsites.net/connect/token', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              },
+              body: formBody
+            });
+            const token = await request.json();
+            const accessToken = token.access_token;
+
         } catch (err) {
           console.log(err);
         }
@@ -41,7 +47,7 @@ const Signup = () => {
   return (
     <div>
         <form onSubmit={handleSubmit}>
-        <input
+        {/* <input
           type="text"
           value={name}
           placeholder="Name"
@@ -52,7 +58,7 @@ const Signup = () => {
           value={surname}
           placeholder="Surname"
           onChange={(e) => setSurname(e.target.value)}
-        />
+        /> */}
         <input
           type="email"
           value={email}
